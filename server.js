@@ -60,10 +60,13 @@ const clients = new Map(); // userId -> Set of WebSocket clients
 wss.on('connection', (ws, req) => {
   let userId = null;
   try {
+    const urlObj = new URL(req.url, 'http://localhost');
+    const queryToken = urlObj.searchParams.get('token');
     const cookieHeader = req.headers.cookie || '';
     const match = cookieHeader.match(/cf_token=([^;]+)/);
-    if (match) {
-      const decoded = jwt.verify(match[1], SECRET);
+    const token = queryToken || (match ? match[1] : null);
+    if (token) {
+      const decoded = jwt.verify(token, SECRET);
       userId = decoded.id;
       if (!clients.has(userId)) clients.set(userId, new Set());
       clients.get(userId).add(ws);
@@ -217,22 +220,36 @@ app.get('/api/projects/:id/ai-inspect', auth, wrap(async (req, res) => {
 // ---------- Live 1-on-1 Chat Endpoints ----------
 app.get('/api/chats', auth, (req, res) => {
   const uid = req.user.id;
-  // Get all conversation partners
-  const chats = db.prepare(`
-    SELECT DISTINCT 
+  const rows = db.prepare(`
+    SELECT DISTINCT
       CASE WHEN sender_id = ? THEN receiver_id ELSE sender_id END as contact_id,
-      m.project_id,
-      p.title as project_title,
-      u.name as contact_name,
-      u.role as contact_role,
-      (SELECT text FROM messages WHERE (sender_id = contact_id AND receiver_id = ?) OR (sender_id = ? AND receiver_id = contact_id) ORDER BY created DESC LIMIT 1) as last_message,
-      (SELECT created FROM messages WHERE (sender_id = contact_id AND receiver_id = ?) OR (sender_id = ? AND receiver_id = contact_id) ORDER BY created DESC LIMIT 1) as last_time
-    FROM messages m
-    JOIN users u ON u.id = (CASE WHEN m.sender_id = ? THEN m.receiver_id ELSE m.sender_id END)
-    LEFT JOIN projects p ON p.id = m.project_id
-    WHERE m.sender_id = ? OR m.receiver_id = ?
-    ORDER BY last_time DESC
-  `).all(uid, uid, uid, uid, uid, uid, uid, uid);
+      project_id
+    FROM messages
+    WHERE sender_id = ? OR receiver_id = ?
+  `).all(uid, uid, uid);
+
+  const chats = rows.map(r => {
+    const contact = db.prepare('SELECT id, name, role FROM users WHERE id=?').get(r.contact_id);
+    if (!contact) return null;
+    const project = r.project_id ? db.prepare('SELECT title FROM projects WHERE id=?').get(r.project_id) : null;
+    const lastMsg = db.prepare(`
+      SELECT text, created FROM messages
+      WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)
+      ORDER BY created DESC LIMIT 1
+    `).get(uid, r.contact_id, r.contact_id, uid);
+
+    return {
+      contact_id: contact.id,
+      contact_name: contact.name,
+      contact_role: contact.role,
+      project_id: r.project_id,
+      project_title: project ? project.title : null,
+      last_message: lastMsg ? lastMsg.text : '',
+      last_time: lastMsg ? lastMsg.created : 0
+    };
+  }).filter(Boolean);
+
+  chats.sort((a, b) => b.last_time - a.last_time);
   res.json(chats);
 });
 

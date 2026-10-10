@@ -35,7 +35,8 @@ const need = () => { if (!me) { openAuth(false); return false; } return true; };
 function connectWebSocket() {
   if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
   const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-  ws = new WebSocket(`${protocol}//${location.host}/ws`);
+  const token = localStorage.getItem('cf_token') || '';
+  ws = new WebSocket(`${protocol}//${location.host}/ws${token ? '?token=' + encodeURIComponent(token) : ''}`);
   ws.onmessage = e => {
     try {
       const data = JSON.parse(e.data);
@@ -643,3 +644,18 @@ api('/me')
   .then(u => { me = u; connectWebSocket(); })
   .catch(() => {})
   .finally(() => { renderAuth(); route(); });
+
+// Live Chat Polling fallback (ensures messages deliver even across strict firewalls)
+setInterval(async () => {
+  const drawer = document.getElementById('chatDrawer');
+  if (activeContactId && drawer && !drawer.classList.contains('hidden')) {
+    try {
+      const msgs = await api('/messages/' + activeContactId);
+      const list = document.getElementById('chatMsgList');
+      if (list && msgs && msgs.length !== list.querySelectorAll('.chat-bubble').length) {
+        list.innerHTML = msgs.map(m => '<div class="chat-bubble ' + (m.sender_id === me.id ? 'mine' : 'theirs') + '">' + esc(m.text) + '</div>').join('');
+        list.scrollTop = list.scrollHeight;
+      }
+    } catch(err) {}
+  }
+}, 3000);
