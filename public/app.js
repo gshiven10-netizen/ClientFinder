@@ -394,7 +394,7 @@ const routes = {
               <label>Full Architecture, Included Deliverables & Features *</label>
               <textarea name="description" rows="5" required placeholder="Describe technical architecture, deployment process, what credentials/licenses are transferred..."></textarea>
             </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+            <div class="form-row-2">
               <div>
                 <label>Category *</label>
                 <select name="category">${CATS.map(c => `<option value="${c}">${c}</option>`).join('')}</select>
@@ -408,7 +408,7 @@ const routes = {
               <label>Tech Stack Tags *</label>
               <input name="tech" required placeholder="e.g. Next.js 14, Tailwind, Prisma, PostgreSQL">
             </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+            <div class="form-row-2">
               <div>
                 <label>Demo URL (Optional)</label>
                 <input name="demo_url" type="url" placeholder="https://demo.myapp.com">
