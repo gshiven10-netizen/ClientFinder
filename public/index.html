@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ClientFinder – The Verified Micro-Acquisition & Codebase Exchange</title>
+<meta name="description" content="Buy and sell production-grade software projects, developer tools, and turnkey templates with Escrow safety and AI codebase auditing.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Cabinet+Grotesk:wght@700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="nav">
+  <a class="logo" href="#/">
+    <span>⚡</span> ClientFinder
+  </a>
+  <nav>
+    <a href="#/">Marketplace</a>
+    <a href="#/discover">Live Radar</a>
+  </nav>
+  <div id="auth" class="auth"></div>
+</header>
+
+<main id="view" tabindex="-1"></main>
+
+<!-- Live 1-on-1 Chat Drawer -->
+<div id="chatDrawer" class="chat-drawer hidden">
+  <div class="chat-head">
+    <div style="display:flex;align-items:center;gap:0.5rem">
+      <span style="display:inline-block;width:9px;height:9px;background:#10B981;border-radius:50%"></span>
+      <strong id="chatTargetName" style="font-size:0.95rem;color:#fff">Seller Chat</strong>
+    </div>
+    <button class="link" data-act="closeChat" style="color:var(--muted);font-size:1.1rem">✕</button>
+  </div>
+  <div id="chatMsgList" class="chat-messages"></div>
+  <form id="chatForm" class="chat-foot">
+    <input id="chatInput" placeholder="Type a message or price offer..." autocomplete="off" required>
+    <button class="btn primary sm" type="submit">Send</button>
+  </form>
+</div>
+
+<!-- Escrow Checkout Dialog -->
+<dialog id="escrowDlg">
+  <div style="display:flex;flex-direction:column;gap:1.2rem">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <span class="badge-pill" style="margin:0">🔒 ClientFinder Escrow Vault</span>
+      <button class="link" onclick="document.getElementById('escrowDlg').close()">✕</button>
+    </div>
+    <h3 id="escrowTitle">Project Acquisition</h3>
+    <div style="background:#0B0F19;padding:1.2rem;border-radius:12px;border:1px solid var(--surface-border)">
+      <div style="display:flex;justify-content:space-between;margin-bottom:0.6rem">
+        <span class="meta">Acquisition Subtotal:</span>
+        <strong id="escrowPrice" style="color:#34D399;font-size:1.2rem">₹0</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:0.85rem;color:var(--muted)">
+        <span>Escrow Security Fee:</span>
+        <span style="color:#A5B4FC">₹0 (Free / Platform Sponsored)</span>
+      </div>
+    </div>
+    
+    <div>
+      <label style="font-size:0.88rem;color:var(--ink-secondary);display:block;margin-bottom:0.4rem">Select Escrow Payment Method</label>
+      <select id="paymentSelect">
+        <option value="Instant UPI & NetBanking (Escrow Vault)">Instant UPI / NetBanking (Escrow Vault)</option>
+        <option value="Credit / Debit Card (Stripe Protected)">Credit / Debit Card (Stripe Protected)</option>
+        <option value="Corporate Wire Transfer">Corporate Wire Transfer</option>
+      </select>
+    </div>
+
+    <div style="font-size:0.82rem;color:var(--muted);line-height:1.5">
+      💡 <em>Your funds will be placed into the ClientFinder Trust Escrow. The maker will be immediately notified to transfer full git repository rights and documentation. Funds are only settled after your inspection.</em>
+    </div>
+
+    <div style="display:flex;gap:0.75rem;justify-content:flex-end;margin-top:0.5rem">
+      <button class="btn" type="button" onclick="document.getElementById('escrowDlg').close()">Cancel</button>
+      <button class="btn primary" id="confirmEscrowBuyBtn" data-act="confirmEscrowPayment">Confirm Escrow Deposit</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- Authentication Modal Dialog -->
+<dialog id="authDlg">
+  <form id="authForm" autocomplete="on">
+    <h2 id="authTitle">Sign in</h2>
+    <div id="nameRow" hidden>
+      <label>Full Name</label>
+      <input name="name" autocomplete="name" placeholder="John Doe">
+    </div>
+    <div>
+      <label>Email address</label>
+      <input name="email" type="email" required autocomplete="email" placeholder="you@domain.com">
+    </div>
+    <div>
+      <label>Password</label>
+      <input name="password" type="password" required minlength="8" autocomplete="current-password" placeholder="••••••••">
+    </div>
+    <div id="roleRow" hidden>
+      <label style="margin-bottom:0.4rem;display:block">I want to join as</label>
+      <div style="display:flex;gap:1.5rem">
+        <label style="display:flex;align-items:center;gap:0.4rem;font-weight:500;cursor:pointer">
+          <input type="radio" name="role" value="buyer" checked style="width:auto"> Project Buyer
+        </label>
+        <label style="display:flex;align-items:center;gap:0.4rem;font-weight:500;cursor:pointer">
+          <input type="radio" name="role" value="seller" style="width:auto"> Codebase Maker
+        </label>
+      </div>
+    </div>
+    <p class="err" id="authErr" role="alert"></p>
+    <button class="btn primary" type="submit" style="width:100%;margin-top:0.5rem">Continue</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.4rem">
+      <button class="link" type="button" data-act="toggleAuth" id="authSwitch">Create an account</button>
+      <button class="link" type="button" data-act="closeAuth" style="color:var(--muted)">Close</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<footer class="foot">
+  ⚡ <strong>ClientFinder Exchange</strong> · All codebases audited with automated AI telemetry · Real-time escrow protection · Feeds from GitHub, DEV & HN.
+</footer>
+
+<script src="/app.js"></script>
+</body>
+</html>

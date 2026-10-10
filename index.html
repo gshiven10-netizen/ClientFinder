@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ClientFinder – Sell your projects, find your buyers</title>
+<meta name="description" content="A marketplace where makers list finished projects and buyers find them.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;800&family=Manrope:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header class="nav">
+  <a class="logo" href="#/">ClientFinder</a>
+  <nav>
+    <a href="#/">Marketplace</a>
+    <a href="#/discover">Live discover</a>
+  </nav>
+  <div id="auth" class="auth"></div>
+</header>
+<main id="view" tabindex="-1"></main>
+<footer class="foot">ClientFinder · Listings are posted by sellers. Discover feeds come from GitHub, DEV and Hacker News public APIs.</footer>
+
+<dialog id="authDlg">
+  <form id="authForm" autocomplete="on">
+    <h2 id="authTitle">Sign in</h2>
+    <label id="nameRow" hidden>Full name<input name="name" autocomplete="name"></label>
+    <label>Email<input name="email" type="email" required autocomplete="email"></label>
+    <label>Password<input name="password" type="password" required minlength="8" autocomplete="current-password"></label>
+    <fieldset id="roleRow" hidden><legend>I want to</legend>
+      <label class="radio"><input type="radio" name="role" value="buyer" checked> Buy projects</label>
+      <label class="radio"><input type="radio" name="role" value="seller"> Sell projects</label>
+    </fieldset>
+    <p class="err" id="authErr" role="alert"></p>
+    <button class="btn primary" type="submit">Continue</button>
+    <button class="link" type="button" data-act="toggleAuth" id="authSwitch">Create an account</button>
+    <button class="link" type="button" data-act="closeAuth">Cancel</button>
+  </form>
+</dialog>
+<div id="toast" role="status" aria-live="polite"></div>
+<script src="/app.js"></script>
+</body>
+</html>
